@@ -1,17 +1,24 @@
 <?php
 
-    session_start();
+include 'db.php';
+include 'validation.php';
 
-    if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true){
-    header('location: index.php');
-    exit;
-    }
-    
-    include 'db.php';
-    include 'validation.php';
-
+if(isset($_GET['id'])) {
     $db = new db();
-    
+    $medewerker = $db->select("SELECT * FROM betalingen WHERE id =:id", ['id'=>$_GET['id']]);
+}
+
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_POST['submit'])){
+
+    $status = trim(strtolower($_POST['status']));
+
+        $db = new db();
+        $sql = "UPDATE betalingen SET status=:status
+                WHERE id=:id";
+        $placeholder = ['status' => $status, 'id' => $_POST['betalingen_id']];
+        $db->update_or_delete($sql, $placeholder, "overzicht_betalingen.php");
+    }
+
 ?>
 
 <!DOCTYPE html>
@@ -38,27 +45,49 @@
         <div class="container-fluid">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                data-target="#bs-example-navbar-collapse-1">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
+                    data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
                 </button>
                 <a href="welkom_admin.php">
-                    <img src="logo-spa-city.svg" alt="project logo" width="220" heigth="80">
+                    <img src="logo-spa-city.svg" alt="Logo" width="220" height="80">
             </div>
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <p class="nav navbar-text">Automatiserings Applicatie</p>
                 <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown">
-                        <a href="welkom_admin.php" class="dropdown-toggle" data-toggle="dropdown"><b><?php echo "Welkom " . htmlentities( $_SESSION['gebruikersnaam']) ."!" ?></b> <span
+                        <a href="welkom_admin.php" class="dropdown-toggle" data-toggle="dropdown"><b>Login</b> <span
                                 class="caret"></span></a>
                         <ul id="login-dp" class="dropdown-menu">
                             <li>
-                                    <div class="form-group">
-                                        <a href="index.php" class="btn btn-primary btn-block">Logout</a>
+                                <div class="row">
+                                    <div class="col-md-12">
+
+                                        <form action="index.php" method="post">
+
+                                            <div class="form-group">
+                                                <label for="gebruikersnaam">Gebruikersnaam :</label>
+                                                <input class="form-control" type="text" name="gebruikersnaam" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="wachtwoord">Wachtwoord :</label>
+                                                <input class="form-control" type="password" name="wachtwoord" required>
+                                            </div>
                                     </div>
+
+                                    <span><?php echo ((isset($loginError) && $loginError != '') ? $loginError ."<br>" : '')?></span>
+
+                                    <div class="form-group">
+                                        <button type="submit" name="submit" class="btn btn-primary btn-block" value="Login">Login</button>
+                                    </div>
+
                                     </form>
                                 </div>
+                                    <div class="help-block text-right"><a href="passr.php">Wachtwoord vergeten?</a>
+                                </div>
+
                             </li>
                         </ul>
                     </li>
@@ -126,7 +155,26 @@
         }
     </script>
 
-    <div><h2 class="message"><?php echo "Welkom"." in jouw dashboard " . htmlentities( $_SESSION['gebruikersnaam'])  ?></h2></div>
+    <p class="py-0 text-center">
+    <div class="rcover">
+        <div class="row">
+            <div class="col-md-4 offset-md-4 form login-form">
+    <form action="edit_betaling.php" method="post">
+        <input type="hidden" name="betalingen_id" value="<?php echo ($_GET["id"])?>">
+        <input type="text" class="form-control" name
+        ="status" placeholder="status"
+            value="<?php echo isset($_POST["status"]) ? htmlentities($_POST["status"]) : ''; ?>" required /><br>
+        
+        <span>
+            <?php 
+                    echo ((isset($msg) && $msg != '') ? htmlentities($msg) ." <br>" : '');
+                    echo ((isset($pwdError) && $pwdError != '') ? htmlentities($pwdError) ." <br>" : '')
+                ?>
+        </span>
+
+        <input type="submit" class="btn btn-primary btn-block" name="submit" value="Betaling Wijzigen" />
+        <span><?php echo ((isset($missingFieldError) && $missingFieldError != '') ? htmlentities($missingFieldError) : '')?></span>
+    </form>
 
 </body>
 

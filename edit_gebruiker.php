@@ -145,8 +145,19 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_P
             <a class="menulinks" href="overzicht_klanten.php">Overzicht Klanten</a>
             <br />
             <br />
-            <a class="menulinks" href="overzicht_betalingen.php">Overzicht betalingen</a>
+            <a class="menulinks" href="overzicht_betalingen.php">Overzicht Status Betalingen</a>
+            <br />
+            <br />
             </div>
+            <br />
+            <br />
+            <button class="dropdown-btn">Status Betaling 
+                <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-container">
+            <br />
+            <br />
+            <a class="menulinks" href="overzicht_status_betalingen.php">Overzicht Betalingen</a>
             </div>
         </div>
     </div>

@@ -13,20 +13,20 @@
     $db = new db();
 
     if(isset($_GET['id'])) {
-        $db->update_or_delete("DELETE FROM klanten WHERE id=:id", ['id'=>$_GET['id']], "overzicht_klanten.php");
-            $loginError = $db->update_or_delete($sql, $placeholder, "overzicht_klanten.php");
+        $db->update_or_delete("DELETE FROM klanten WHERE id=:id", ['id'=>$_GET['id']], "overzicht_status_betalingen.php");
+            $loginError = $db->update_or_delete($sql, $placeholder, "overzicht_status_betalingen.php");
             var_dump($loginError);
     }
 
     if(isset($_POST['export'])){
-        $filename = "klanten_data_export.xls";
+        $filename = "klant_betaling_data_export.xls";
         header("Content-Type: application/vnd.ms-excel");
         header("Content-Disposition: attachment; filename=\"$filename\"");
         $print_header = false;
         
-        $result = $db->select("SELECT klanten.id, klanten.naam, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
+        $result = $db->select("SELECT klanten.id, klanten.naam, klanten.email, betalingen.status, klanten.created_at, klanten.updated_at
         FROM klanten
-            INNER JOIN betalingen ON klanten.betalingen_id = betalingen.id", []);
+        INNER JOIN betalingen ON klanten.betalingen_id = betalingen.id", []);
         
         if(!empty($result)){
             foreach($result as $row){
@@ -72,7 +72,7 @@
                 <span class="icon-bar"></span>
                 </button>
                 <a href="welkom_admin.php">
-                    <img src="logo-spa-city.svg" alt="project logo" width="220" heigth="80">
+                    <img src="logo-spa-city.svg" alt="project logo" width="220" heigth="110">
             </div>
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <p class="nav navbar-text">Automatiserings Applicatie</p>
@@ -156,13 +156,13 @@
 
     <?php
 
-    $result_set = $db->select("SELECT klanten.id, klanten.naam, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
-    FROM klanten, betalingen", []);
+    $result_set = $db->select("SELECT klanten.id, klanten.naam, klanten.email, betalingen.status, klanten.created_at, klanten.updated_at
+        FROM klanten, betalingen", []);
     $columns = array_keys($result_set[0]);
 
-    $result_set1 = $db->select("SELECT klanten.id, klanten.naam, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
+    $result_set1 = $db->select("SELECT klanten.id, klanten.naam, klanten.email, betalingen.status, klanten.created_at, klanten.updated_at
     FROM klanten
-        INNER JOIN betalingen ON klanten.betalingen_id = betalingen.id", []);
+    INNER JOIN betalingen ON klanten.betalingen_id = betalingen.id", []);
     ?>
 
     <div class="container-xl">
@@ -171,13 +171,12 @@
             <div class="table-title">
                 <div class="row">
                     <div class="col-sm-5">
-                        <h2>Klanten <b>Management</b></h2>
+                        <h2>Klant Bestelling Status <b>Management</b></h2>
                     </div>
                     <div class="col-sm-7">
-                        <a href="voeg_klant_toe.php" class="btn btn-secondary"><i class="material-icons">&#xE147;</i> <span>Voeg Klant Toe</span></a>
-                        
+                    <a href="voeg_bestelling_status_toe.php" class="btn btn-secondary"><i class="material-icons">&#xE147;</i> <span>Voeg Bestelling Status Toe</span></a>
                         <form method="post" action="overzicht_klanten.php" class="row">
-                        <input class="btn btn-secondary" type="submit" value="Export To Excel" name="export"></input>
+                            <input class="btn btn-secondary" type="submit" value="Export To Excel" name="export"></input>
                         </form>						
                     </div>
                 </div>
@@ -190,13 +189,11 @@
                                 <strong> <?php echo $column ?> </strong>
                             </th>
                             <?php } ?>
-                            <th colspan="2">action</th>
                         </tr>
                     </thead>
                     <?php foreach($result_set1 as $rows => $row){ ?>
 
-            <?php $row_id = $row['id']; 
-?>
+            <?php $row_id = $row['id'];?>
             <tr>
                 <?php   foreach($row as $row_data){?>
                 <td>
@@ -204,16 +201,16 @@
                 </td>
                 <?php } ?>
                 <td>
-                    <a href="edit_klant.php?id=<?php echo $row_id; ?>" class="settings" ><i class="material-icons">&#xE8B8;</i></a>
+                <td>
+                    <a href="edit_status_betaling.php?id=<?php echo $row_id; ?>" class="settings" ><i class="material-icons">&#xE8B8;</i></a>
                     <a onclick="return confirm('Are you sure you want to delete this entry?')"
-                        href="overzicht_klanten.php?id=<?php echo $row_id; ?>"
+                        href="overzicht_status_betalingen.php?id=<?php echo $row_id; ?>"
                         class="delete" title="Delete"><i class="material-icons">&#xE5C9;</i></a>
+                </td>
                 </td>
             </tr>
             <?php } ?>
             </table>
-
-
 </body>
 
 </html>

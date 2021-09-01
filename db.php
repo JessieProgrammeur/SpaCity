@@ -12,7 +12,7 @@ class db{
 
     // aanmaken class constants ( admin en medewerker)
     const ADMIN = 1;
-    const MEDEWERKER = 2;
+    const GEBRUIKER = 2;
     
     public function __construct(){
 
@@ -88,6 +88,98 @@ class db{
             return "Failed to login. Please try again";
             }
         }
+    }
+
+    // uitvoeren van een update of delete statement
+    public function update_or_delete($statement, $named_placeholder, $location){
+        $stmt = $this->connection->prepare($statement);
+        $stmt->execute($named_placeholder);
+        header("location: $location");
+        exit();
+    }
+
+    // uitvoeren van een insert into statement
+    public function insert($sql, $named_placeholder, $location){
+        try{
+            $this->connection->beginTransaction();
+
+            $statement = $this->connection->prepare($sql);
+            $statement->execute($named_placeholder);
+
+            $_SESSION['last_insert_id'] = $last_id = $this->connection->lastInsertId();
+            
+            $this->connection->commit();
+
+            header("location: $location");
+
+        }catch(Exception $e){
+            $this->connection->rollback();
+            throw $e;
+        }
+    }
+
+    // functie die een gebruikers hun gebruikersnaam controleert/ location aangeeft en functie aanmaken gebruikers aanroept
+    public function voeg_gebruiker_toe($usertype_id=self::GEBRUIKER, $voornaam, $gebruikersnaam, $wachtwoord, $email, $telefoonnummer){
+
+        try{
+            
+             $this->connection->beginTransaction();
+            
+             if(!$this->is_nieuw_gebruiker($gebruikersnaam)){
+                 return "Gebruikersnaam bestaat al. Kies een andere gebruikersnaam en probeer opnieuw.";
+             }
+             
+             $gebruikers_id = $this->voeg_gebruiker(NULL, $usertype_id, $voornaam, $gebruikersnaam, $wachtwoord, $email, $telefoonnummer);
+             
+             $this->connection->commit();
+             
+             header('location: overzicht_gebruikers.php');
+             exit;
+
+        }catch(Exception $e){
+            
+            $this->connection->rollback();
+            echo "Signup failed: " . $e->getMessage();
+        }
+     }
+
+     // functie die een gebruiker invoegt in de database
+     private function voeg_gebruiker($id, $usertype_id, $voornaam, $gebruikersnaam, $wachtwoord, $email, $telefoonnummer){
+        
+        $hashed_password = password_hash($wachtwoord, PASSWORD_DEFAULT);
+
+        $sql = "INSERT INTO gebruikers VALUES (NULL, :usertype_id, :voornaam, :gebruikersnaam, :wachtwoord, :email, :telefoonnummer, :created, :updated)";
+
+        $statement = $this->connection->prepare($sql);
+
+        $created_at = $updated_at = date('Y-m-d H:i:s');
+
+        $statement->execute([
+            'usertype_id'=>$usertype_id,
+            'voornaam'=>$voornaam,
+            'gebruikersnaam'=>$gebruikersnaam, 
+            'wachtwoord'=>$hashed_password, 
+            'email'=>$email, 
+            'telefoonnummer'=>$telefoonnummer, 
+            'created'=> $created_at, 
+            'updated'=> $updated_at
+        ]);
+        
+        $gebruikers_id = $this->connection->lastInsertId();
+        return $gebruikers_id;
+    }
+
+    // functie die controleert of de gebruikersnaam al bestaat
+    private function is_nieuw_gebruiker($gebruikersnaam){
+        $stmt = $this->connection->prepare('SELECT * FROM gebruikers WHERE gebruikersnaam=:gebruikersnaam');
+        $stmt->execute(['gebruikersnaam'=>$gebruikersnaam]);
+
+        $result = $stmt->fetch();
+
+        if(is_array($result) && count($result) > 0){
+            return false;
+        }
+        return true;
     }
 }
 

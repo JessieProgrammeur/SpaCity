@@ -1,45 +1,50 @@
 <?php
 
-    session_start();
+include 'db.php';
+include 'validation.php';
 
-    if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true){
+session_start();
+
+if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true){
     header('location: index.php');
     exit;
-    }
-    
-    include 'db.php';
-    include 'validation.php';
+}
 
-    $db = new db();
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_POST['submit'])){
 
-    if(isset($_GET['id'])) {
-        $db->update_or_delete("DELETE FROM klanten WHERE id=:id", ['id'=>$_GET['id']], "overzicht_klanten.php");
-            $loginError = $db->update_or_delete($sql, $placeholder, "overzicht_klanten.php");
-            var_dump($loginError);
-    }
+    $fields = [
+        'naam', 'email', 'betalingen_id'
+    ];
+     
+    $obj = new Helper();
 
-    if(isset($_POST['export'])){
-        $filename = "klanten_data_export.xls";
-        header("Content-Type: application/vnd.ms-excel");
-        header("Content-Disposition: attachment; filename=\"$filename\"");
-        $print_header = false;
+    $fields_validated = $obj->field_validation($fields);
+
+    if($fields_validated){
+
+        $naam = trim(strtolower($_POST['naam']));
+        $email = trim(strtolower($_POST['email']));
+        $betalingen_id = trim(strtolower($_POST['betalingen_id']));
+
+        $sql = "UPDATE klanten SET naam=:naam, email=:email, betalingen_id=:betalingen_id WHERE id=:id";
         
-        $result = $db->select("SELECT klanten.id, klanten.naam, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
-        FROM klanten
-            INNER JOIN betalingen ON klanten.betalingen_id = betalingen.id", []);
-        
-        if(!empty($result)){
-            foreach($result as $row){
-                if(!$print_header){
-                    echo implode("\t", array_keys($row)) ."\n";
-                    $print_header=true;
-                }
-                echo implode("\t", array_values($row)) ."\n";
-            }
-        }
-        exit;
+        $placeholder = [
+        'naam'=>$naam,
+        'email'=>$email,
+        'betalingen_id'=>$betalingen_id,
+        'id'=>$_POST['klanten_id']
+        ];
+
+        $db = new db();
+        $db->update_or_delete($sql, $placeholder, "overzicht_status_betalingen.php");
+
+    }else{
+        $missingFieldError = "Niet alle velden zijn ingevuld. Vul alle velden in en probeer opnieuw.";
     }
+
     
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -155,64 +160,30 @@
     </script>
 
     <?php
-
-    $result_set = $db->select("SELECT klanten.id, klanten.naam, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
-    FROM klanten, betalingen", []);
-    $columns = array_keys($result_set[0]);
-
-    $result_set1 = $db->select("SELECT klanten.id, klanten.naam, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
-    FROM klanten
-        INNER JOIN betalingen ON klanten.betalingen_id = betalingen.id", []);
+        $db = new db();
+        $status = $db->select("SELECT id, status FROM betalingen", []);
     ?>
 
-    <div class="container-xl">
-    <div class="table-responsive">
-        <div class="table-wrapper">
-            <div class="table-title">
-                <div class="row">
-                    <div class="col-sm-5">
-                        <h2>Klanten <b>Management</b></h2>
-                    </div>
-                    <div class="col-sm-7">
-                        <a href="voeg_klant_toe.php" class="btn btn-secondary"><i class="material-icons">&#xE147;</i> <span>Voeg Klant Toe</span></a>
-                        
-                        <form method="post" action="overzicht_klanten.php" class="row">
-                        <input class="btn btn-secondary" type="submit" value="Export To Excel" name="export"></input>
-                        </form>						
-                    </div>
-                </div>
-            </div>
-            <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <?php foreach($columns as $column){ ?>
-                            <th>
-                                <strong> <?php echo $column ?> </strong>
-                            </th>
-                            <?php } ?>
-                            <th colspan="2">action</th>
-                        </tr>
-                    </thead>
-                    <?php foreach($result_set1 as $rows => $row){ ?>
-
-            <?php $row_id = $row['id']; 
-?>
-            <tr>
-                <?php   foreach($row as $row_data){?>
-                <td>
-                    <?php echo $row_data ?>
-                </td>
-                <?php } ?>
-                <td>
-                    <a href="edit_klant.php?id=<?php echo $row_id; ?>" class="settings" ><i class="material-icons">&#xE8B8;</i></a>
-                    <a onclick="return confirm('Are you sure you want to delete this entry?')"
-                        href="overzicht_klanten.php?id=<?php echo $row_id; ?>"
-                        class="delete" title="Delete"><i class="material-icons">&#xE5C9;</i></a>
-                </td>
-            </tr>
+    <p class="py-0 text-center">
+    <div class="rcover">
+        <div class="row">
+            <div class="col-md-4 offset-md-4 form login-form">
+    <form action="voeg_bestelling_status_toe.php" method="post">
+    <input type="hidden" name="klanten_id" value="<?php echo ($_GET["id"])?>">
+    <input type="text" class="form-control" name="naam" placeholder="naam"
+            value="<?php echo isset($_POST["naam"]) ? htmlentities($_POST["naam"]) : ''; ?>" required /><br>
+        <input type="email" class="form-control" name="email" placeholder="email"
+            value="<?php echo isset($_POST["email"]) ? htmlentities($_POST["email"]) : ''; ?>" required /><br>
+        <select class="form-control" name="betalingen_id">
+            <?php foreach($status as $data){ ?>
+                <option value="<?php echo $data['id']?>">
+                    <?php echo $data['status'] ?>
+                </option>
             <?php } ?>
-            </table>
-
+        </select><br>
+            <input type="submit" class="btn btn-primary btn-block" name="submit" value="Betaling Status Toevoegen" />
+        <span><?php echo ((isset($missingFieldError) && $missingFieldError != '') ? htmlentities($missingFieldError) : '')?></span>
+    </form>
 
 </body>
 

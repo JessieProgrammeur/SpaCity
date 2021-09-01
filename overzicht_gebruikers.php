@@ -119,8 +119,19 @@
             <a class="menulinks" href="overzicht_klanten.php">Overzicht Klanten</a>
             <br />
             <br />
-            <a class="menulinks" href="overzicht_betalingen.php">Overzicht betalingen</a>
+            <a class="menulinks" href="overzicht_betalingen.php">Overzicht Status Betalingen</a>
+            <br />
+            <br />
             </div>
+            <br />
+            <br />
+            <button class="dropdown-btn">Status Betaling 
+                <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-container">
+            <br />
+            <br />
+            <a class="menulinks" href="overzicht_status_betalingen.php">Overzicht Betalingen</a>
             </div>
         </div>
     </div>
@@ -163,7 +174,7 @@
                         <h2>Gebruikers <b>Management</b></h2>
                     </div>
                     <div class="col-sm-7">
-                        <a href="add_gebruiker.php" class="btn btn-secondary"><i class="material-icons">&#xE147;</i> <span>Voeg Gebruiker Toe</span></a>
+                        <a href="voeg_gebruiker_toe.php" class="btn btn-secondary"><i class="material-icons">&#xE147;</i> <span>Voeg Gebruiker Toe</span></a>
                         
                         <form method="post" action="overzicht_gebruikers.php" class="row">
                         <input class="btn btn-secondary" type="submit" value="Export To Excel" name="export"></input>

@@ -1,45 +1,33 @@
 <?php
 
-    session_start();
+include 'db.php';
+include 'validation.php';
 
-    if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true){
+session_start();
+
+if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true){
     header('location: index.php');
     exit;
-    }
-    
-    include 'db.php';
-    include 'validation.php';
+}
+
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_POST['submit'])){
+
+    $status = trim(strtolower($_POST['status']));
+
+    $sql = "INSERT INTO betalingen VALUES(NULL, :status, :created_at, :updated_at)";
+        
+    $created_at = $updated_at = date('Y-m-d H:i:s');
+
+    $placeholder = [
+        'status'=>$status,
+        'created_at'=>$created_at,
+        'updated_at'=>$updated_at
+    ];
 
     $db = new db();
+    $db->insert($sql, $placeholder, "overzicht_betalingen.php");
+}
 
-    if(isset($_GET['id'])) {
-        $db->update_or_delete("DELETE FROM klanten WHERE id=:id", ['id'=>$_GET['id']], "overzicht_klanten.php");
-            $loginError = $db->update_or_delete($sql, $placeholder, "overzicht_klanten.php");
-            var_dump($loginError);
-    }
-
-    if(isset($_POST['export'])){
-        $filename = "klanten_data_export.xls";
-        header("Content-Type: application/vnd.ms-excel");
-        header("Content-Disposition: attachment; filename=\"$filename\"");
-        $print_header = false;
-        
-        $result = $db->select("SELECT klanten.id, klanten.naam, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
-        FROM klanten
-            INNER JOIN betalingen ON klanten.betalingen_id = betalingen.id", []);
-        
-        if(!empty($result)){
-            foreach($result as $row){
-                if(!$print_header){
-                    echo implode("\t", array_keys($row)) ."\n";
-                    $print_header=true;
-                }
-                echo implode("\t", array_values($row)) ."\n";
-            }
-        }
-        exit;
-    }
-    
 ?>
 
 <!DOCTYPE html>
@@ -154,65 +142,23 @@
         }
     </script>
 
-    <?php
+    <p class="py-0 text-center">
+    <div class="rcover">
+        <div class="row">
+            <div class="col-md-4 offset-md-4 form login-form">
+    <form action="voeg_betaling_toe.php" method="post">
+    <input type="text" class="form-control" name="status" placeholder="status"
+            value="<?php echo isset($_POST["status"]) ? htmlentities($_POST["status"]) : ''; ?>" required /><br>
+        <span>
+            <?php 
+                    echo ((isset($msg) && $msg != '') ? htmlentities($msg) ." <br>" : '');
+                    echo ((isset($pwdError) && $pwdError != '') ? htmlentities($pwdError) ." <br>" : '')
+                ?>
+        </span>
 
-    $result_set = $db->select("SELECT klanten.id, klanten.naam, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
-    FROM klanten, betalingen", []);
-    $columns = array_keys($result_set[0]);
-
-    $result_set1 = $db->select("SELECT klanten.id, klanten.naam, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
-    FROM klanten
-        INNER JOIN betalingen ON klanten.betalingen_id = betalingen.id", []);
-    ?>
-
-    <div class="container-xl">
-    <div class="table-responsive">
-        <div class="table-wrapper">
-            <div class="table-title">
-                <div class="row">
-                    <div class="col-sm-5">
-                        <h2>Klanten <b>Management</b></h2>
-                    </div>
-                    <div class="col-sm-7">
-                        <a href="voeg_klant_toe.php" class="btn btn-secondary"><i class="material-icons">&#xE147;</i> <span>Voeg Klant Toe</span></a>
-                        
-                        <form method="post" action="overzicht_klanten.php" class="row">
-                        <input class="btn btn-secondary" type="submit" value="Export To Excel" name="export"></input>
-                        </form>						
-                    </div>
-                </div>
-            </div>
-            <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <?php foreach($columns as $column){ ?>
-                            <th>
-                                <strong> <?php echo $column ?> </strong>
-                            </th>
-                            <?php } ?>
-                            <th colspan="2">action</th>
-                        </tr>
-                    </thead>
-                    <?php foreach($result_set1 as $rows => $row){ ?>
-
-            <?php $row_id = $row['id']; 
-?>
-            <tr>
-                <?php   foreach($row as $row_data){?>
-                <td>
-                    <?php echo $row_data ?>
-                </td>
-                <?php } ?>
-                <td>
-                    <a href="edit_klant.php?id=<?php echo $row_id; ?>" class="settings" ><i class="material-icons">&#xE8B8;</i></a>
-                    <a onclick="return confirm('Are you sure you want to delete this entry?')"
-                        href="overzicht_klanten.php?id=<?php echo $row_id; ?>"
-                        class="delete" title="Delete"><i class="material-icons">&#xE5C9;</i></a>
-                </td>
-            </tr>
-            <?php } ?>
-            </table>
-
+        <input type="submit" class="btn btn-primary btn-block" name="submit" value="Betaling Status Toevoegen" />
+        <span><?php echo ((isset($missingFieldError) && $missingFieldError != '') ? htmlentities($missingFieldError) : '')?></span>
+    </form>
 
 </body>
 

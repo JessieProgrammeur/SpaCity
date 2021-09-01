@@ -1,45 +1,40 @@
 <?php
 
-    session_start();
+include 'db.php';
+include 'validation.php';
 
-    if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true){
-    header('location: index.php');
-    exit;
-    }
-    
-    include 'db.php';
-    include 'validation.php';
-
+if(isset($_GET['id'])) {
     $db = new db();
+    $medewerker = $db->select("SELECT * FROM klanten WHERE id =:id", ['id'=>$_GET['id']]);
+}
 
-    if(isset($_GET['id'])) {
-        $db->update_or_delete("DELETE FROM klanten WHERE id=:id", ['id'=>$_GET['id']], "overzicht_klanten.php");
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_POST['submit'])){
+
+    $fields = [
+        'naam', 'email'
+    ];
+     
+    $obj = new Helper();
+
+    $fields_validated = $obj->field_validation($fields);
+
+    if($fields_validated){
+        
+        $naam = trim(strtolower($_POST['naam']));
+        $email = trim(strtolower($_POST['email']));
+        $betalingen_id = trim(strtolower($_POST['betalingen_id']));
+
+            $db = new db();
+            $sql = "UPDATE klanten SET naam=:naam, email=:email, betaling_id=:betaling_id
+                    WHERE id=:id";
+            $placeholder = ['naam' => $naam, 'email' => $email, 'betaling_id' => $betalingen_id, 'id' => $_POST['klanten_id']];
             $loginError = $db->update_or_delete($sql, $placeholder, "overzicht_klanten.php");
             var_dump($loginError);
+    }else{
+        $missingFieldError = "Input for one of more fields missing. Please provide all required values and try again.";
     }
+}
 
-    if(isset($_POST['export'])){
-        $filename = "klanten_data_export.xls";
-        header("Content-Type: application/vnd.ms-excel");
-        header("Content-Disposition: attachment; filename=\"$filename\"");
-        $print_header = false;
-        
-        $result = $db->select("SELECT klanten.id, klanten.naam, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
-        FROM klanten
-            INNER JOIN betalingen ON klanten.betalingen_id = betalingen.id", []);
-        
-        if(!empty($result)){
-            foreach($result as $row){
-                if(!$print_header){
-                    echo implode("\t", array_keys($row)) ."\n";
-                    $print_header=true;
-                }
-                echo implode("\t", array_values($row)) ."\n";
-            }
-        }
-        exit;
-    }
-    
 ?>
 
 <!DOCTYPE html>
@@ -66,27 +61,49 @@
         <div class="container-fluid">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                data-target="#bs-example-navbar-collapse-1">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
+                    data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
                 </button>
                 <a href="welkom_admin.php">
-                    <img src="logo-spa-city.svg" alt="project logo" width="220" heigth="80">
+                    <img src="logo-spa-city.svg" alt="Logo" width="220" height="80">
             </div>
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <p class="nav navbar-text">Automatiserings Applicatie</p>
                 <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown">
-                        <a href="welkom_admin.php" class="dropdown-toggle" data-toggle="dropdown"><b><?php echo "Welkom " . htmlentities( $_SESSION['gebruikersnaam']) ."!" ?></b> <span
+                        <a href="welkom_admin.php" class="dropdown-toggle" data-toggle="dropdown"><b>Login</b> <span
                                 class="caret"></span></a>
                         <ul id="login-dp" class="dropdown-menu">
                             <li>
-                                    <div class="form-group">
-                                        <a href="index.php" class="btn btn-primary btn-block">Logout</a>
+                                <div class="row">
+                                    <div class="col-md-12">
+
+                                        <form action="index.php" method="post">
+
+                                            <div class="form-group">
+                                                <label for="gebruikersnaam">Gebruikersnaam :</label>
+                                                <input class="form-control" type="text" name="gebruikersnaam" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="wachtwoord">Wachtwoord :</label>
+                                                <input class="form-control" type="password" name="wachtwoord" required>
+                                            </div>
                                     </div>
+
+                                    <span><?php echo ((isset($loginError) && $loginError != '') ? $loginError ."<br>" : '')?></span>
+
+                                    <div class="form-group">
+                                        <button type="submit" name="submit" class="btn btn-primary btn-block" value="Login">Login</button>
+                                    </div>
+
                                     </form>
                                 </div>
+                                    <div class="help-block text-right"><a href="passr.php">Wachtwoord vergeten?</a>
+                                </div>
+
                             </li>
                         </ul>
                     </li>
@@ -155,64 +172,37 @@
     </script>
 
     <?php
-
-    $result_set = $db->select("SELECT klanten.id, klanten.naam, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
-    FROM klanten, betalingen", []);
-    $columns = array_keys($result_set[0]);
-
-    $result_set1 = $db->select("SELECT klanten.id, klanten.naam, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
-    FROM klanten
-        INNER JOIN betalingen ON klanten.betalingen_id = betalingen.id", []);
+        $db = new db();
+        $betalingen = $db->select("SELECT id, status FROM betalingen", []);
     ?>
 
-    <div class="container-xl">
-    <div class="table-responsive">
-        <div class="table-wrapper">
-            <div class="table-title">
-                <div class="row">
-                    <div class="col-sm-5">
-                        <h2>Klanten <b>Management</b></h2>
-                    </div>
-                    <div class="col-sm-7">
-                        <a href="voeg_klant_toe.php" class="btn btn-secondary"><i class="material-icons">&#xE147;</i> <span>Voeg Klant Toe</span></a>
-                        
-                        <form method="post" action="overzicht_klanten.php" class="row">
-                        <input class="btn btn-secondary" type="submit" value="Export To Excel" name="export"></input>
-                        </form>						
-                    </div>
-                </div>
-            </div>
-            <table class="table table-striped table-hover">
-                    <thead>
-                        <tr>
-                            <?php foreach($columns as $column){ ?>
-                            <th>
-                                <strong> <?php echo $column ?> </strong>
-                            </th>
-                            <?php } ?>
-                            <th colspan="2">action</th>
-                        </tr>
-                    </thead>
-                    <?php foreach($result_set1 as $rows => $row){ ?>
-
-            <?php $row_id = $row['id']; 
-?>
-            <tr>
-                <?php   foreach($row as $row_data){?>
-                <td>
-                    <?php echo $row_data ?>
-                </td>
-                <?php } ?>
-                <td>
-                    <a href="edit_klant.php?id=<?php echo $row_id; ?>" class="settings" ><i class="material-icons">&#xE8B8;</i></a>
-                    <a onclick="return confirm('Are you sure you want to delete this entry?')"
-                        href="overzicht_klanten.php?id=<?php echo $row_id; ?>"
-                        class="delete" title="Delete"><i class="material-icons">&#xE5C9;</i></a>
-                </td>
-            </tr>
+    <p class="py-0 text-center">
+    <div class="rcover">
+        <div class="row">
+            <div class="col-md-4 offset-md-4 form login-form">
+    <form action="edit_klant.php" method="post">
+        <input type="hidden" name="klanten_id" value="<?php echo ($_GET["id"])?>">
+        <input type="text" class="form-control" name="naam" placeholder="naam"
+            value="<?php echo isset($_POST["naam"]) ? htmlentities($_POST["naam"]) : ''; ?>" required /><br>
+        <input type="text" class="form-control" name="email" placeholder="email"
+            value="<?php echo isset($_POST["email"]) ? htmlentities($_POST["email"]) : ''; ?>" required /><br>
+            <select class="form-control" name="school_id">
+            <?php foreach($betalingen as $data){ ?>
+                <option value="<?php echo $data['id']?>">
+                    <?php echo $data['status'] ?>
+                </option>
             <?php } ?>
-            </table>
+        </select><br>
+        <span>
+            <?php 
+                    echo ((isset($msg) && $msg != '') ? htmlentities($msg) ." <br>" : '');
+                    echo ((isset($pwdError) && $pwdError != '') ? htmlentities($pwdError) ." <br>" : '')
+                ?>
+        </span>
 
+        <input type="submit" class="btn btn-primary btn-block" name="submit" value="Klant Wijzigen" />
+        <span><?php echo ((isset($missingFieldError) && $missingFieldError != '') ? htmlentities($missingFieldError) : '')?></span>
+    </form>
 
 </body>
 
