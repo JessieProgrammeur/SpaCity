@@ -1,54 +1,17 @@
 <?php
 
-include 'db.php';
-include 'validation.php';
+    session_start();
 
-session_start();
-
-if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true){
+    if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true){
     header('location: index.php');
     exit;
-}
+    }
 
-if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_POST['submit'])){
-
-    $fields = [
-        'voornaam', 'achternaam', 'adres', 'postcode', 'plaats', 'telefoonnummer', 'email', 'betalingen_id'
-    ];
-     
-    $obj = new Helper();
-
-    $fields_validated = $obj->field_validation($fields);
-
-    if($fields_validated){
-        
-        $voornaam = trim(strtolower($_POST['voornaam']));
-        $achternaam = trim(strtolower($_POST['achternaam']));
-        $adres = trim(strtolower($_POST['adres']));
-        $postcode = trim(strtolower($_POST['postcode']));
-        $plaats = trim(strtolower($_POST['plaats']));
-        $telefoonnummer = trim(strtolower($_POST['telefoonnummer']));
-        $email = trim(strtolower($_POST['email']));
-        $betalingen_id = trim(strtolower($_POST['betalingen_id']));
-
-    $sql = "INSERT INTO klanten VALUES(NULL, :naam, :email, :betalingen_id, :created_at, :updated_at)";
-    
-    $created_at = $updated_at = date('Y-m-d H:i:s');
-    
-    $placeholder = [
-        'naam'=>$naam,
-        'email'=>$email,
-        'betalingen_id'=>$betalingen_id,
-        'created_at'=>$created_at,
-        'updated_at'=>$updated_at
-    ];
+    include 'db.php';
+    include 'validation.php';
 
     $db = new db();
-    $db->insert($sql, $placeholder, "overzicht_klanten.php");
-
-    }
-}
-
+    
 ?>
 
 <!DOCTYPE html>
@@ -163,40 +126,100 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_P
         }
     </script>
 
-    <?php
-        $db = new db();
-        $status = $db->select("SELECT id, status FROM betalingen", []);
-    ?>
+    <div class="container-xl">
+        <div class="table-responsive">
+            <div class="table-wrapper">
+                <div class="table-title">
+                    <div class="row">
+                        <div class="col-sm-5">
+                            <h2>Uploaden <b>Klantenbestand</b></h2>
+                        </div>
+                    </div>
+                </div>
+    <table class="table table-striped table-hover">
+        <form action="<?php echo $_SERVER["PHP_SELF"]; ?>" method="post" enctype="multipart/form-data">
 
-    <p class="py-0 text-center">
-    <div class="rcover">
-        <div class="row">
-            <div class="col-md-4 offset-md-4 form login-form">
-    <form action="voeg_klant_toe.php" method="post">
-        <input type="text" class="form-control" name="voornaam" placeholder="voornaam"
-            value="<?php echo isset($_POST["voornaam"]) ? htmlentities($_POST["voornaam"]) : ''; ?>" required /><br>
-        <input type="text" class="form-control" name="achternaam" placeholder="achternaam"
-            value="<?php echo isset($_POST["achternaam"]) ? htmlentities($_POST["achternaam"]) : ''; ?>" required /><br>
-        <input type="text" class="form-control" name="adres" placeholder="adres"
-            value="<?php echo isset($_POST["adres"]) ? htmlentities($_POST["adres"]) : ''; ?>" required /><br>
-        <input type="text" class="form-control" name="postcode" placeholder="postcode"
-            value="<?php echo isset($_POST["postcode"]) ? htmlentities($_POST["postcode"]) : ''; ?>" required /><br>
-        <input type="text" class="form-control" name="plaats" placeholder="plaats"
-            value="<?php echo isset($_POST["plaats"]) ? htmlentities($_POST["plaats"]) : ''; ?>" required /><br>
-        <input type="text" class="form-control" name="telefoonnummer" placeholder="telefoonnummer"
-            value="<?php echo isset($_POST["telefoonnummer"]) ? htmlentities($_POST["telefoonnummer"]) : ''; ?>" required /><br>
-        <input type="text" class="form-control" name="email" placeholder="email"
-            value="<?php echo isset($_POST["email"]) ? htmlentities($_POST["email"]) : ''; ?>" /><br>
-        <select class="form-control" name="betalingen_id">
-            <?php foreach($status as $data){ ?>
-                <option value="<?php echo $data['id']?>">
-                    <?php echo $data['status'] ?>
-                </option>
-            <?php } ?>
-        </select><br>
-            <input type="submit" class="btn btn-primary btn-block" name="submit" value="Klant Toevoegen" />
-        <span><?php echo ((isset($missingFieldError) && $missingFieldError != '') ? htmlentities($missingFieldError) : '')?></span>
-    </form>
+    <tr>
+        <td width="20%">Select file</td>
+        <td width="80%"><input type="file" name="file" id="file" /></td>
+    </tr>
+
+    <tr>
+        <td>Submit</td>
+        <td><input type="submit" name="submit" /></td>
+    </tr>
+
+        </form>
+    </table>
+
+<?php
+
+    if ( isset($_POST["submit"]) ) {
+
+    if(!empty(isset($_FILES["file"]))) {
+        if (($fp = fopen($_FILES["file"]["tmp_name"], "r")) !== FALSE) {
+        ?>
+    
+    <div class="container-xl">
+    <div class="table-responsive">
+        <div class="table-wrapper">
+            <div class="table-title">
+                <div class="row">
+                    <div class="col-sm-5">
+                        <h2>Klanten <b>Bestand</b></h2>
+                    </div>
+                    <div class="col-sm-7">
+                        <a href="voeg_klant_toe.php" class="btn btn-secondary"><i class="material-icons">&#xE147;</i> <span>Voeg Klant Toe</span></a>
+                        <form method="post" action="overzicht_klanten.php" class="row">
+                        </form>						
+                    </div>
+                </div>
+            </div>
+    <table class="table table-striped table-hover">
+    <?php
+        $i = 0;
+        while (($row = fgetcsv($fp)) !== false) {
+            $class ="";
+            if($i==0) {
+            $class = "header";
+            }
+            ?>
+            <tr>
+                <td class="<?php echo $class; ?>"><?php echo $row[0]; ?></td>
+                <td class="<?php echo $class; ?>"><?php echo $row[1]; ?></td>
+                <td class="<?php echo $class; ?>"><?php echo $row[2]; ?></td>
+                <td class="<?php echo $class; ?>"><?php echo $row[3]; ?></td>
+                <td class="<?php echo $class; ?>"><?php echo $row[4]; ?></td>
+                <td class="<?php echo $class; ?>"><?php echo $row[5]; ?></td>
+                <td class="<?php echo $class; ?>"><?php echo $row[6]; ?></td>
+                <td class="<?php echo $class; ?>"><?php echo $row[7]; ?></td>
+                <td class="<?php echo $class; ?>"><?php echo $row[8]; ?></td>
+                <td class="<?php echo $class; ?>"><?php echo $row[9]; ?></td>
+                <td class="<?php echo $class; ?>"><?php echo $row[10]; ?></td>
+                <td class="<?php echo $class; ?>"><?php echo $row[11]; ?></td>
+            </tr>
+        <?php
+            $i ++;
+        }
+        fclose($fp);
+        ?>
+        </table>
+    <?php
+        $response = array("type" => "success", "message" => "Bestand succesvol geupload!");
+        } else {
+            $response = array("type" => "error", "message" => "Unable to process CSV");
+        }
+    }
+    }
+
+    ?>
+    </div>
+    <?php if(!empty($response)) { ?>
+    <div class="response <?php echo $response["type"]; ?>
+        ">
+        <?php echo $response["message"]; ?>
+    </div>
+    <?php } ?>
 
 </body>
 

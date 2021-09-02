@@ -10,6 +10,14 @@ CREATE TABLE usertype(
     PRIMARY KEY(id)
 );
 
+CREATE TABLE bedrijf(
+    id INT NOT NULL AUTO_INCREMENT,
+    naam VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY(id)
+);
+
 CREATE TABLE betalingen(
     id INT NOT NULL AUTO_INCREMENT,
     status VARCHAR(255),
@@ -18,15 +26,43 @@ CREATE TABLE betalingen(
     PRIMARY KEY(id)
 );
 
-CREATE TABLE klanten(
+CREATE TABLE factuur(
+    id INT NOT NULL AUTO_INCREMENT,
+    factuurnummer INT,
+    factuurdatum DATE,
+    bestelnummer INT,
+    besteldatum DATE,
+    betaalmethode VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY(id)
+);
+
+CREATE TABLE product(
     id INT NOT NULL AUTO_INCREMENT,
     naam VARCHAR(255),
+    verkoopprijs INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY(id)
+);
+
+CREATE TABLE klanten(
+    id INT NOT NULL AUTO_INCREMENT,
+    voornaam VARCHAR(255),
+    achternaam VARCHAR(255),
+    adres VARCHAR(255),
+    postcode VARCHAR(255),
+    plaats VARCHAR(255),
+    telefoonnummer INT,
     email VARCHAR(255),
     betalingen_id INT NOT NULL,
+    factuuur_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY(id),
-    FOREIGN KEY(id) REFERENCES betalingen(id) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY(id) REFERENCES betalingen(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY(id) REFERENCES factuur(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE gebruikers(
@@ -50,5 +86,7 @@ INSERT INTO usertype VALUES (NULL, 'gebruiker', now(), now());
 INSERT INTO betalingen VALUES (NULL, 'afgerond', now(), now());
 INSERT INTO betalingen VALUES (NULL, 'in behandeling', now(), now());
 INSERT INTO betalingen VALUES (NULL, 'afgekeurd', now(), now());
+
+INSERT INTO bedrijf VALUES (NULL, 'Spacity', now(), now());
 
 INSERT INTO gebruikers VALUES (NULL, 1, 'jessie', 'jessie', '$2y$10$LGONlkPCf9QOJjV6Tlyy/.YPLwmTZeQ2pHIJXzdr5lToWEI3GA6Bu', 'admin', 0643501502,  now(), now());

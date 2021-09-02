@@ -24,7 +24,7 @@
         header("Content-Disposition: attachment; filename=\"$filename\"");
         $print_header = false;
         
-        $result = $db->select("SELECT klanten.id, klanten.naam, klanten.email, betalingen.status, klanten.created_at, klanten.updated_at
+        $result = $db->select("SELECT klanten.id, klanten.voornaam, klanten.achternaam, klanten.adres, klanten.postcode, klanten.plaats, klanten.telefoonnummer, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
         FROM klanten
         INNER JOIN betalingen ON klanten.betalingen_id = betalingen.id", []);
         
@@ -156,11 +156,11 @@
 
     <?php
 
-    $result_set = $db->select("SELECT klanten.id, klanten.naam, klanten.email, betalingen.status, klanten.created_at, klanten.updated_at
-        FROM klanten, betalingen", []);
+    $result_set = $db->select("SELECT klanten.id, klanten.voornaam, klanten.achternaam, klanten.adres, klanten.postcode, klanten.plaats, klanten.telefoonnummer, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
+    FROM klanten, betalingen", []);
     $columns = array_keys($result_set[0]);
 
-    $result_set1 = $db->select("SELECT klanten.id, klanten.naam, klanten.email, betalingen.status, klanten.created_at, klanten.updated_at
+    $result_set1 = $db->select("SELECT klanten.id, klanten.voornaam, klanten.achternaam, klanten.adres, klanten.postcode, klanten.plaats, klanten.telefoonnummer, klanten.email, klanten.betalingen_id, klanten.created_at, klanten.updated_at 
     FROM klanten
     INNER JOIN betalingen ON klanten.betalingen_id = betalingen.id", []);
     ?>
