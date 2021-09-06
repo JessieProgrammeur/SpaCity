@@ -11,7 +11,7 @@ if(isset($_GET['id'])) {
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_POST['submit'])){
 
     $fields = [
-        'voornaam', 'achternaam', 'adres', 'postcode', 'plaats', 'telefoonnummer', 'email', 'betalingen_id'
+        'naam', 'adres', 'postcode', 'plaats', 'telefoonnummer', 'email', 'betalingen_id'
     ];
      
     $obj = new Helper();
@@ -20,8 +20,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_P
 
     if($fields_validated){
         
-        $voornaam = trim(strtolower($_POST['voornaam']));
-        $achternaam = trim(strtolower($_POST['achternaam']));
+        $naam = trim(strtolower($_POST['naam']));
         $adres = trim(strtolower($_POST['adres']));
         $postcode = trim(strtolower($_POST['postcode']));
         $plaats = trim(strtolower($_POST['plaats']));
@@ -30,9 +29,9 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_P
         $betalingen_id = trim(strtolower($_POST['betalingen_id']));
 
             $db = new db();
-            $sql = "UPDATE klanten SET voornaam=:voornaam, achternaam=:achternaam, adres=:adres, postcode=:postcode, plaats=:plaats, telefoonnummer=:telefoonnummer, email=:email, betaling_id=:betaling_id
+            $sql = "UPDATE klanten SET naam=:naam, adres=:adres, postcode=:postcode, plaats=:plaats, telefoonnummer=:telefoonnummer, email=:email, betaling_id=:betaling_id
                     WHERE id=:id";
-            $placeholder = ['voornaam' => $voornaam, 'achternaam' => $achternaam, 'adres' => $adres, 'postcode' => $postcode, 'plaats' => $plaats, 'telefoonnummer' => $telefoonnummer, 'email' => $email, 'betaling_id' => $betalingen_id, 'id' => $_POST['klanten_id']];
+            $placeholder = ['naam' => $naam, 'adres' => $adres, 'postcode' => $postcode, 'plaats' => $plaats, 'telefoonnummer' => $telefoonnummer, 'email' => $email, 'betaling_id' => $betalingen_id, 'id' => $_POST['klanten_id']];
             $loginError = $db->update_or_delete($sql, $placeholder, "overzicht_klanten.php");
             var_dump($loginError);
     }else{
@@ -187,10 +186,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_P
             <div class="col-md-4 offset-md-4 form login-form">
     <form action="edit_klant.php" method="post">
         <input type="hidden" name="klanten_id" value="<?php echo ($_GET["id"])?>">
-        <input type="text" class="form-control" name="voornaam" placeholder="voornaam"
-            value="<?php echo isset($_POST["voornaam"]) ? htmlentities($_POST["voornaam"]) : ''; ?>" required /><br>
-        <input type="text" class="form-control" name="achternaam" placeholder="achternaam"
-            value="<?php echo isset($_POST["achternaam"]) ? htmlentities($_POST["achternaam"]) : ''; ?>" required /><br>
+        <input type="text" class="form-control" name="naam" placeholder="naam"
+            value="<?php echo isset($_POST["naam"]) ? htmlentities($_POST["naam"]) : ''; ?>" required /><br>
         <input type="text" class="form-control" name="adres" placeholder="adres"
             value="<?php echo isset($_POST["adres"]) ? htmlentities($_POST["adres"]) : ''; ?>" required /><br>
         <input type="text" class="form-control" name="postcode" placeholder="postcode"

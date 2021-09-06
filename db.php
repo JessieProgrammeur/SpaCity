@@ -181,6 +181,64 @@ class db{
         }
         return true;
     }
+
+    // functie die een gebruikers hun gebruikersnaam controleert/ location aangeeft en functie aanmaken gebruikers aanroept
+    public function import_klanten($naam, $postcode, $plaats, $email){
+
+        try{
+            
+             $this->connection->beginTransaction();
+            
+             if(!$this->is_nieuw_klant($naam)){
+                 return "Klant bestaat al. Controleer import file.";
+             }
+             
+             $klanten_id = $this->voeg_klant(NULL, $naam, $postcode, $plaats, $email);
+             
+             $this->connection->commit();
+             
+             header('location: overzicht_klanten.php');
+             exit;
+
+        }catch(Exception $e){
+            
+            $this->connection->rollback();
+            echo "Signup failed: " . $e->getMessage();
+        }
+     }
+
+     // functie die een gebruiker invoegt in de database
+     private function voeg_klant($id, $naam, $postcode, $plaats, $email){
+        
+        $sql = "INSERT INTO klanten VALUES (NULL, :naam, :postcode, :plaats, :email)";
+
+        $statement = $this->connection->prepare($sql);
+
+        $statement->execute([
+            'naam'=>$psotcode,
+            'plaats'=>$plaats,
+            'email'=>$email 
+        ]);
+        
+        $klanten_id = $this->connection->lastInsertId();
+        return $klantens_id;
+
+        header('location: overzicht_klanten.php');
+             exit;
+    }
+
+    // functie die controleert of de gebruikersnaam al bestaat
+    private function is_nieuw_klant($naam){
+        $stmt = $this->connection->prepare('SELECT * FROM klanten WHERE naam=:naam');
+        $stmt->execute(['naam'=>$naam]);
+
+        $result = $stmt->fetch();
+
+        if(is_array($result) && count($result) > 0){
+            return false;
+        }
+        return true;
+    }
 }
 
 ?>

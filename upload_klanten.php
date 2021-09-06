@@ -169,7 +169,9 @@
                         <h2>Klanten <b>Bestand</b></h2>
                     </div>
                     <div class="col-sm-7">
-                        <a href="voeg_klant_toe.php" class="btn btn-secondary"><i class="material-icons">&#xE147;</i> <span>Voeg Klant Toe</span></a>
+                        <form method="post">
+                            <input type="submit" name="uploaden" class="button"><i class="material-icons">&#xE147;</i> <span>Voeg Klanten Toe</span> </input><div> </div>    
+                        </form>
                         <form method="post" action="overzicht_klanten.php" class="row">
                         </form>						
                     </div>
@@ -186,16 +188,12 @@
             ?>
             <tr>
                 <td class="<?php echo $class; ?>"><?php echo $row[0]; ?></td>
-                <td class="<?php echo $class; ?>"><?php echo $row[1]; ?></td>
                 <td class="<?php echo $class; ?>"><?php echo $row[2]; ?></td>
-                <td class="<?php echo $class; ?>"><?php echo $row[3]; ?></td>
                 <td class="<?php echo $class; ?>"><?php echo $row[4]; ?></td>
                 <td class="<?php echo $class; ?>"><?php echo $row[5]; ?></td>
-                <td class="<?php echo $class; ?>"><?php echo $row[6]; ?></td>
                 <td class="<?php echo $class; ?>"><?php echo $row[7]; ?></td>
                 <td class="<?php echo $class; ?>"><?php echo $row[8]; ?></td>
                 <td class="<?php echo $class; ?>"><?php echo $row[9]; ?></td>
-                <td class="<?php echo $class; ?>"><?php echo $row[10]; ?></td>
                 <td class="<?php echo $class; ?>"><?php echo $row[11]; ?></td>
             </tr>
         <?php
@@ -232,21 +230,9 @@
 }
 
 // Insert data into database   
-
-    $all_data = csvToArray('files/testcsv.csv');
-    foreach ($all_data as $data) {
-
-        $sql = $db->prepare("INSERT INTO klanten (naam,  roll, department) 
-        VALUES (:name, :roll, :department)");
-        $sql->bindParam(':name', $data['name']);
-        $sql->bindParam(':roll', $data['roll']);
-        $sql->bindParam(':department', $data['department']);
-        $sql->execute();
-
+    
     }
-    }
-    }
-
+}
     ?>
     </div>
     <?php if(!empty($response)) { ?>
@@ -255,7 +241,30 @@
         <?php echo $response["message"]; ?>
     </div>
     <?php } ?>
+    <?php
+    if(isset($_POST['uploaden'])) {
+        
+        // $all_data = csvToArray($_FILES["file"]);
+        //     foreach ($all_data as $data) {
+        //         $sql = $db->import_klanten("INSERT INTO klanten (naam, postcode, plaats, email");
 
+        //         header('location: overzicht_klanten.php');
+        //         exit;
+        //     }
+
+        if (($handle = fopen('$_FILES["file"]', 'r')) !== FALSE) { // Check the resource is valid
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) { // Check opening the file is OK!
+                print_r($data); // Array
+            }
+            fclose($handle);
+        }
+
+        $csv = array_map('str_getcsv', file('$_FILES["file"]'));
+        print_r($csv);
+    }else{
+        echo"failed";
+    }
+    ?>
 </body>
 
 </html>

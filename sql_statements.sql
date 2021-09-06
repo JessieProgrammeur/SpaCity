@@ -49,8 +49,7 @@ CREATE TABLE product(
 
 CREATE TABLE klanten(
     id INT NOT NULL AUTO_INCREMENT,
-    voornaam VARCHAR(255),
-    achternaam VARCHAR(255),
+    naam VARCHAR(255),
     adres VARCHAR(255),
     postcode VARCHAR(255),
     plaats VARCHAR(255),
