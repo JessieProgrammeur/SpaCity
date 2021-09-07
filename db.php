@@ -215,7 +215,8 @@ class db{
         $statement = $this->connection->prepare($sql);
 
         $statement->execute([
-            'naam'=>$psotcode,
+            'naam'=>$naam,
+            'postcode'=>$postcode,
             'plaats'=>$plaats,
             'email'=>$email 
         ]);
@@ -239,6 +240,30 @@ class db{
         }
         return true;
     }
+
+    public function insert_klanten($sql, $named_placeholder){
+
+        print_r($sql);
+        try{
+            $this->connection->beginTransaction();
+
+            $statement = $this->connection->prepare($sql);
+            $statement->execute($named_placeholder);
+
+            $_SESSION['last_insert_id'] = $last_id = $this->connection->lastInsertId();
+            
+            $this->connection->commit();
+
+
+    }catch(Exception $e){
+            
+        $this->connection->rollback();
+        echo "Signup failed: " . $e->getMessage();
+    }
+
+
+}
+
 }
 
 ?>

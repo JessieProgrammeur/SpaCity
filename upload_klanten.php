@@ -152,7 +152,7 @@
         </form>
     </table>
 
-<?php
+    <?php
 
     if ( isset($_POST["submit"]) ) {
 
@@ -188,11 +188,7 @@
             ?>
             <tr>
                 <td class="<?php echo $class; ?>"><?php echo $row[0]; ?></td>
-                <td class="<?php echo $class; ?>"><?php echo $row[2]; ?></td>
                 <td class="<?php echo $class; ?>"><?php echo $row[4]; ?></td>
-                <td class="<?php echo $class; ?>"><?php echo $row[5]; ?></td>
-                <td class="<?php echo $class; ?>"><?php echo $row[7]; ?></td>
-                <td class="<?php echo $class; ?>"><?php echo $row[8]; ?></td>
                 <td class="<?php echo $class; ?>"><?php echo $row[9]; ?></td>
                 <td class="<?php echo $class; ?>"><?php echo $row[11]; ?></td>
             </tr>
@@ -241,56 +237,70 @@
         <?php echo $response["message"]; ?>
     </div>
     <?php } ?>
+
+
     <?php
-    if(isset($_POST['uploaden'])) {
+
+    if(isset($_POST['submit'])){
         
-        $all_data = function csvToArray($_FILES["file"]);
-            // foreach ($all_data as $data) {
-            //     $sql = $db->import_klanten("INSERT INTO klanten (naam, postcode, plaats, email");
-
-            //     header('location: overzicht_klanten.php');
-            //     exit;
-            // }
-
-                    $filename=$_FILES["file"]["tmp_name"];    
-            if($_FILES["file"]["size"] > 0)
-            {
-                $file = fopen($filename, "r");
-                while (($getData = fgetcsv($file, 10000, ",")) !== FALSE)
-                {
-                    $sql = "INSERT into employeeinfo (emp_id,firstname,lastname,email,reg_date) 
-                        values ('".$getData[0]."','".$getData[1]."','".$getData[2]."','".$getData[3]."','".$getData[4]."')";
-                        $result = mysqli_query($con, $sql);
-                if(!isset($result))
-                {
-                echo "<script type=\"text/javascript\">
-                    alert(\"Invalid File:Please Upload CSV File.\");
-                    window.location = \"index.php\"
-                    </script>";    
-                }
-                else {
-                    echo "<script type=\"text/javascript\">
-                    alert(\"CSV File has been successfully Imported.\");
-                    window.location = \"index.php\"
-                </script>";
-                }
-                }
+        // Allowed mime types
+        $csvMimes = array('text/x-comma-separated-values', 'text/comma-separated-values', 'application/octet-stream', 'application/vnd.ms-excel', 'application/x-csv', 'text/x-csv', 'text/csv', 'application/csv', 'application/excel', 'application/vnd.msexcel', 'text/plain');
+        
+        // Validate whether selected file is a CSV file
+        if(!empty($_FILES['file']['name']) && in_array($_FILES['file']['type'], $csvMimes)){
             
-                fclose($file);  
-            }
-        }   
-            echo "test";
-        // if (($handle = fopen('$_FILES["file"]', 'r')) !== FALSE) { // Check the resource is valid
-        //     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) { // Check opening the file is OK!
-        //         print_r($data); // Array
-        //     }
-        //     fclose($handle);
-        // }
+            // If the file is uploaded
+            if(is_uploaded_file($_FILES['file']['tmp_name'])){
+                
+                // Open uploaded CSV file with read-only mode
+                $csvFile = fopen($_FILES['file']['tmp_name'], 'r');
+                
+                // Skip the first line
+                fgetcsv($csvFile);
+                
+                // Parse data from CSV file line by line
+                while(($line = fgetcsv($csvFile)) !== FALSE){
+                    
+                    // Get row data
+                    $naam   = $line[0];
+                    $postcode  = $line[4];
+                    $plaats  = $line[9];
+                    $email = $line[11];
+                    $telefoonnummer = 0;
+                    $betalingen_id = 1;
+                    $factuur_id = 1;
+                    $created_at = $updated_at = date('Y-m-d H:i:s');
 
-        // $csv = array_map('str_getcsv', file('$_FILES["file"]'));
-        // print_r($csv);
-    }else{
-        echo"failed";
+                    $sql = "INSERT INTO klanten (naam, email, plaats, postcode, telefoonnummer, betalingen_id, factuur_id, created_at, updated_at) 
+                    VALUES ('".$naam."', '".$postcode."', '".$plaats."', '".$email."', '".$telefoonnummer."'
+                            , '".$betalingen_id."', '".$factuur_id."', '".$created_at."', '".$updated_at."')";
+
+                    $named_placeholder = [
+                        'naam'=> $naam,
+                        'postcode'=> $postcode,
+                        'plaats'=> $plaats,
+                        'email'=> $email,
+                        'telefoonnummer'=> $telefoonnummer,
+                        'betalingen_id'=> $betalingen_id,
+                        'factuur_id'=> $factuur_id,
+                        'created_at'=> $created_at,
+                        'updated_at'=> $updated_at
+                    ];
+
+                        $db = new db();
+                        $db->insert_klanten($sql, $named_placeholder);
+                }
+                
+                // Close opened CSV file
+                fclose($csvFile);
+                
+                $qstring = '?status=succ';
+            }else{
+                $qstring = '?status=err';
+            }
+        }else{
+            $qstring = '?status=invalid_file';
+        }
     }
     ?>
 </body>
