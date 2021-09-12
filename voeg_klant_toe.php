@@ -13,7 +13,7 @@ if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true){
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_POST['submit'])){
 
     $fields = [
-        'naam', 'adres', 'postcode', 'plaats', 'telefoonnummer', 'email', 'betalingen_id'
+        'naam', 'adres', 'postcode', 'plaats', 'telefoonnummer', 'email', 'betalingen_id', 'factuur_id'
     ];
      
     $obj = new Helper();
@@ -29,15 +29,21 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_P
         $telefoonnummer = trim(strtolower($_POST['telefoonnummer']));
         $email = trim(strtolower($_POST['email']));
         $betalingen_id = trim(strtolower($_POST['betalingen_id']));
+        $factuur_id = trim(strtolower($_POST['factuur_id']));
 
-    $sql = "INSERT INTO klanten VALUES(NULL, :naam, :email, :betalingen_id, :created_at, :updated_at)";
+    $sql = "INSERT INTO klanten VALUES(NULL, :naam, :adres, :postcode, :plaats, :telefoonnummer, :email, :betalingen_id, :factuur_id, :created_at, :updated_at)";
     
     $created_at = $updated_at = date('Y-m-d H:i:s');
     
     $placeholder = [
         'naam'=>$naam,
+        'adres'=>$adres,
+        'postcode'=>$postcode,
+        'plaats'=>$plaats,
+        'telefoonnummer'=>$telefoonnummer,
         'email'=>$email,
         'betalingen_id'=>$betalingen_id,
+        'factuur_id'=>$factuur_id,
         'created_at'=>$created_at,
         'updated_at'=>$updated_at
     ];
@@ -165,6 +171,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_P
     <?php
         $db = new db();
         $status = $db->select("SELECT id, status FROM betalingen", []);
+        $methode = $db->select("SELECT id, betaalmethode FROM factuur", []);
     ?>
 
     <p class="py-0 text-center">
@@ -188,6 +195,13 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit']) && !empty($_P
             <?php foreach($status as $data){ ?>
                 <option value="<?php echo $data['id']?>">
                     <?php echo $data['status'] ?>
+                </option>
+            <?php } ?>
+        </select><br>
+        <select class="form-control" name="factuur_id">
+            <?php foreach($methode as $data){ ?>
+                <option value="<?php echo $data['id']?>">
+                    <?php echo $data['betaalmethode'] ?>
                 </option>
             <?php } ?>
         </select><br>

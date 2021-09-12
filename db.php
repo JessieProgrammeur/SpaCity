@@ -243,7 +243,6 @@ class db{
 
     public function insert_klanten($sql, $named_placeholder){
 
-        print_r($sql);
         try{
             $this->connection->beginTransaction();
 
@@ -251,18 +250,16 @@ class db{
             $statement->execute($named_placeholder);
 
             $_SESSION['last_insert_id'] = $last_id = $this->connection->lastInsertId();
+            echo $_SESSION['last_insert_id'] = $last_id = $this->connection->lastInsertId();
             
             $this->connection->commit();
 
-
-    }catch(Exception $e){
-            
-        $this->connection->rollback();
-        echo "Signup failed: " . $e->getMessage();
+        }catch(Exception $e){
+                
+            $this->connection->rollback();
+            echo "Signup failed: " . $e->getMessage();
+        }
     }
-
-
-}
 
 }
 

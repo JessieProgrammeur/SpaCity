@@ -262,25 +262,27 @@
                 while(($line = fgetcsv($csvFile)) !== FALSE){
                     
                     // Get row data
-                    $naam   = $line[0];
-                    $postcode  = $line[4];
-                    $plaats  = $line[9];
-                    $email = $line[11];
+                    $naam  = $line[0];
+                    $adres = "blabla";
+                    $postcode = $line[11];
+                    $plaats = $line[9];
                     $telefoonnummer = 0;
+                    $email = $line[4];
                     $betalingen_id = 1;
                     $factuur_id = 1;
                     $created_at = $updated_at = date('Y-m-d H:i:s');
 
-                    $sql = "INSERT INTO klanten (naam, email, plaats, postcode, telefoonnummer, betalingen_id, factuur_id, created_at, updated_at) 
-                    VALUES ('".$naam."', '".$postcode."', '".$plaats."', '".$email."', '".$telefoonnummer."'
+                    $sql = "INSERT INTO klanten
+                    VALUES (NULL, '".$naam."', '".$adres."', '".$postcode."', '".$plaats."', '".$telefoonnummer."', '".$email."'
                             , '".$betalingen_id."', '".$factuur_id."', '".$created_at."', '".$updated_at."')";
 
                     $named_placeholder = [
                         'naam'=> $naam,
+                        'adres'=> $adres,
                         'postcode'=> $postcode,
                         'plaats'=> $plaats,
-                        'email'=> $email,
                         'telefoonnummer'=> $telefoonnummer,
+                        'email'=> $email,
                         'betalingen_id'=> $betalingen_id,
                         'factuur_id'=> $factuur_id,
                         'created_at'=> $created_at,
