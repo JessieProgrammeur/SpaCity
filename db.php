@@ -248,16 +248,18 @@ class db{
 
             $statement = $this->connection->prepare($sql);
             $statement->execute($named_placeholder);
-
+            // var_dump($sql);
+            // var_dump($named_placeholder);
             $_SESSION['last_insert_id'] = $last_id = $this->connection->lastInsertId();
-            echo $_SESSION['last_insert_id'] = $last_id = $this->connection->lastInsertId();
+            //  echo $last_id = $this->connection->lastInsertId();
+            // echo $_SESSION['last_insert_id'] = $last_id = $this->connection->lastInsertId();
             
             $this->connection->commit();
 
         }catch(Exception $e){
                 
             $this->connection->rollback();
-            echo "Signup failed: " . $e->getMessage();
+            throw $e;
         }
     }
 
