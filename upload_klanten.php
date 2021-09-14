@@ -99,11 +99,26 @@
             <br />
             <button class="dropdown-btn">Status Betaling 
                 <i class="fa fa-caret-down"></i>
+            <br />
+            <br />        
             </button>
             <div class="dropdown-container">
             <br />
             <br />
             <a class="menulinks" href="overzicht_status_betalingen.php">Overzicht Betalingen</a>
+            </div>
+            <br />
+            <br /> 
+            <button class="dropdown-btn">Uploaden 
+                <i class="fa fa-caret-down"></i>
+            </button>
+            <div class="dropdown-container">
+            <br />
+            <br />
+            <a class="menulinks" href="upload_klanten.php">Upload Klanten</a>
+            <br />
+            <br />
+            <a class="menulinks" href="upload_klanten.php">Upload Producten</a>
             </div>
         </div>
     </div>
@@ -262,33 +277,34 @@
                 while(($line = fgetcsv($csvFile)) !== FALSE){
                     
                     // Get row data
-                    $naam  = $line[0];
-                    $adres = "blabla";
-                    $postcode = $line[11];
-                    $plaats = $line[9];
-                    $telefoonnummer = 0;
-                    $email = $line[4];
-                    $betalingen_id = 1;
-                    $factuur_id = 1;
-                    $created_at = $updated_at = date('Y-m-d H:i:s');
+                    // $naam  = $line[0];
+                    // $adres = "blabla";
+                    // $postcode = $line[11];
+                    // $plaats = $line[9];
+                    // $telefoonnummer = 0;
+                    // $email = $line[4];
+                    // $betalingen_id = 1;
+                    // $factuur_id = 1;
+                    // $created_at = $updated_at = date('Y-m-d H:i:s');
 
-                    $sql = "INSERT INTO klanten
-                    VALUES (NULL, '".$naam."', '".$adres."', '".$postcode."', '".$plaats."', '".$telefoonnummer."', '".$email."'
-                            , '".$betalingen_id."', '".$factuur_id."', '".$created_at."', '".$updated_at."')";
-
+                    $sql = "INSERT INTO klanten 
+                    VALUES (NULL, :naam, :adres, :postcode, :plaats, :telefoonnummer, :email
+                            , :betalingen_id, :factuur_id, :created_at, :updated_at)";
+                    // echo $sql;
+                    
                     $named_placeholder = [
-                        'naam'=> $naam,
-                        'adres'=> $adres,
-                        'postcode'=> $postcode,
-                        'plaats'=> $plaats,
-                        'telefoonnummer'=> $telefoonnummer,
-                        'email'=> $email,
-                        'betalingen_id'=> $betalingen_id,
-                        'factuur_id'=> $factuur_id,
-                        'created_at'=> $created_at,
-                        'updated_at'=> $updated_at
+                        'naam'=> $line[0],
+                        'adres'=> NULL,
+                        'postcode'=> $line[11],
+                        'plaats'=> $line[9],
+                        'telefoonnummer'=> NULL,
+                        'email'=> $line[4],
+                        'betalingen_id'=> NULL,
+                        'factuur_id'=> NULL,
+                        'created_at'=> date('Y-m-d H:i:s'),
+                        'updated_at'=> date('Y-m-d H:i:s')
                     ];
-
+                    // print_r($named_placeholder);
                         $db = new db();
                         $db->insert_klanten($sql, $named_placeholder);
                 }
