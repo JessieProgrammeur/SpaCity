@@ -307,7 +307,11 @@
                     // print_r($named_placeholder);
                         $db = new db();
                         $db->insert_klanten($sql, $named_placeholder);
-                }
+                        
+                        $db->update_or_delete("UPDATE klanten SET betalingen_id = 0, factuur_id = 0", []);
+                        $loginError = $db->update_or_delete($sql, $named_placeholder);
+                        // var_dump($loginError);
+                    }
                 
                 // Close opened CSV file
                 fclose($csvFile);

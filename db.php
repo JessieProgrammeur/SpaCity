@@ -90,14 +90,6 @@ class db{
         }
     }
 
-    // uitvoeren van een update of delete statement
-    public function update_or_delete($statement, $named_placeholder, $location){
-        $stmt = $this->connection->prepare($statement);
-        $stmt->execute($named_placeholder);
-        header("location: $location");
-        exit();
-    }
-
     // uitvoeren van een insert into statement
     public function insert($sql, $named_placeholder, $location){
         try{
@@ -248,15 +240,30 @@ class db{
 
             $statement = $this->connection->prepare($sql);
             $statement->execute($named_placeholder);
-            // var_dump($sql);
-            // var_dump($named_placeholder);
+
             $_SESSION['last_insert_id'] = $last_id = $this->connection->lastInsertId();
-            //  echo $last_id = $this->connection->lastInsertId();
-            // echo $_SESSION['last_insert_id'] = $last_id = $this->connection->lastInsertId();
             
             $this->connection->commit();
 
         }catch(Exception $e){
+                
+            $this->connection->rollback();
+            throw $e;
+        }
+    }
+
+    public function update_or_delete($statement, $named_placeholder){
+        
+    try{
+
+        $this->connection->beginTransaction();
+
+        $stmt = $this->connection->prepare($statement);
+        $stmt->execute($named_placeholder);
+
+        $this->connection->commit();
+
+    }catch(Exception $e){
                 
             $this->connection->rollback();
             throw $e;

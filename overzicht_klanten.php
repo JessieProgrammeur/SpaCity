@@ -171,13 +171,14 @@
 
     <?php
 
-    $result_set = $db->select("SELECT klanten.id, klanten.naam, klanten.adres, klanten.postcode, klanten.plaats, klanten.telefoonnummer, klanten.email, betalingen.status, klanten.created_at, klanten.updated_at 
-    FROM klanten, betalingen", []);
+    $result_set = $db->select("SELECT klanten.id, klanten.naam, klanten.adres, klanten.postcode, klanten.plaats, klanten.telefoonnummer, klanten.email, betalingen.status, factuur.factuurdatum, klanten.created_at, klanten.updated_at 
+    FROM klanten, betalingen, factuur", []);
     $columns = array_keys($result_set[0]);
 
-    $result_set1 = $db->select("SELECT klanten.id, klanten.naam, klanten.adres, klanten.postcode, klanten.plaats, klanten.telefoonnummer, klanten.email, betalingen.status, klanten.created_at, klanten.updated_at 
+    $result_set1 = $db->select("SELECT klanten.id, klanten.naam, klanten.adres, klanten.postcode, klanten.plaats, klanten.telefoonnummer, klanten.email, betalingen.status, factuur.factuurdatum, klanten.created_at, klanten.updated_at 
     FROM klanten
-        INNER JOIN betalingen ON klanten.betalingen_id = betalingen.id", []);
+        INNER JOIN betalingen ON klanten.betalingen_id = betalingen.id
+        INNER JOIN factuur ON klanten.factuur_id = factuur.id", []);
     ?>
 
     <div class="container-xl">
